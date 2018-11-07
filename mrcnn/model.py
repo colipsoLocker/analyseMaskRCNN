@@ -122,7 +122,7 @@ def identity_block(input_tensor, kernel_size, filters, stage, block,
                   use_bias=use_bias)(x)
     x = BatchNorm(name=bn_name_base + '2c')(x, training=train_bn)
 
-    x = KL.Add()([x, input_tensor])
+    x = KL.Add()([x, input_tensor])  #实现输入和输出相加
     x = KL.Activation('relu', name='res' + str(stage) + block + '_out')(x)
     return x
 

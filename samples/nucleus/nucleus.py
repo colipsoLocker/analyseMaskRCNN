@@ -41,7 +41,7 @@ import json
 import datetime
 import numpy as np
 import skimage.io
-from imgaug import augmenters as iaa
+from imgaug import augmenters as iaa  #imaug 是一个图像处理库，可以用来变换图像
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
@@ -111,7 +111,7 @@ class NucleusConfig(Config):
     NUM_CLASSES = 1 + 1  # Background + nucleus
 
     # Number of training and validation steps per epoch
-    STEPS_PER_EPOCH = (657 - len(VAL_IMAGE_IDS)) // IMAGES_PER_GPU
+    STEPS_PER_EPOCH = (657 - len(VAL_IMAGE_IDS)) // IMAGES_PER_GPU  #训练集有670张图 每个epoch训练一轮图片
     VALIDATION_STEPS = max(1, len(VAL_IMAGE_IDS) // IMAGES_PER_GPU)
 
     # Don't exclude based on confidence. Since we have two classes
@@ -144,7 +144,7 @@ class NucleusConfig(Config):
     RPN_TRAIN_ANCHORS_PER_IMAGE = 64
 
     # Image mean (RGB)
-    MEAN_PIXEL = np.array([43.53, 39.56, 48.22])
+    MEAN_PIXEL = np.array([43.53, 39.56, 48.22]) #对数据集正则化
 
     # If enabled, resizes instance masks to a smaller size to reduce
     # memory load. Recommended when using high-resolution images.
@@ -180,7 +180,7 @@ class NucleusInferenceConfig(NucleusConfig):
 #  Dataset
 ############################################################
 
-class NucleusDataset(utils.Dataset):
+class NucleusDataset(utils.Dataset):  #用来处理数据集
 
     def load_nucleus(self, dataset_dir, subset):
         """Load a subset of the nuclei dataset.
@@ -266,7 +266,7 @@ def train(model, dataset_dir, subset):
 
     # Image augmentation
     # http://imgaug.readthedocs.io/en/latest/source/augmenters.html
-    augmentation = iaa.SomeOf((0, 2), [
+    augmentation = iaa.SomeOf((0, 2), [   #对图像做一些变换
         iaa.Fliplr(0.5),
         iaa.Flipud(0.5),
         iaa.OneOf([iaa.Affine(rotate=90),
@@ -281,7 +281,7 @@ def train(model, dataset_dir, subset):
     # If starting from imagenet, train heads only for a bit
     # since they have random weights
     print("Train network heads")
-    model.train(dataset_train, dataset_val,
+    model.train(dataset_train, dataset_val,    #mask Rcnn 自己定义的train
                 learning_rate=config.LEARNING_RATE,
                 epochs=20,
                 augmentation=augmentation,
@@ -299,8 +299,8 @@ def train(model, dataset_dir, subset):
 #  RLE Encoding
 ############################################################
 
-def rle_encode(mask):
-    """Encodes a mask in Run Length Encoding (RLE).
+def rle_encode(mask):  #游程编码
+    """Encodes a mask in Run Length Encoding (RLE). #https://zh.wikipedia.org/wiki/%E6%B8%B8%E7%A8%8B%E7%BC%96%E7%A0%81
     Returns a string of space-separated values.
     """
     assert mask.ndim == 2, "Mask must be of shape [Height, Width]"
@@ -315,7 +315,7 @@ def rle_encode(mask):
     return " ".join(map(str, rle.flatten()))
 
 
-def rle_decode(rle, shape):
+def rle_decode(rle, shape):  #游程解码
     """Decodes an RLE encoded list of space separated
     numbers and returns a binary mask."""
     rle = list(map(int, rle.split()))
@@ -332,7 +332,7 @@ def rle_decode(rle, shape):
     return mask
 
 
-def mask_to_rle(image_id, mask, scores):
+def mask_to_rle(image_id, mask, scores): 
     "Encodes instance masks to submission format."
     assert mask.ndim == 3, "Mask must be [H, W, count]"
     # If mask is empty, return line with image ID only
